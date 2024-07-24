@@ -1,0 +1,35 @@
+#include "Kismet/KismetSystemLibrary.h"
+
+FVector actorPosition = GetActorLocation();
+FVector actorForward = GetActorForwardVector();
+
+//Convert collision channel to ETraceTypeQuery 
+ETraceTypeQuery traceTypeQuery = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility);
+
+// Ignore actors
+TArray<AActor*> ignoreActors;
+
+// Start point and end point
+FVector sphereStart = actorPosition;
+FVector sphereEnd = sphereStart + actorForward * 200.f;
+
+// Do sphere sweep
+FHitResult result;
+
+/**
+ * Sweeps a sphere along the given line and returns the first blocking hit encountered.
+ * This trace finds the objects that RESPONDS to the given TraceChannel
+ * 
+ * @param Start			Start of line segment.
+ * @param End			End of line segment.
+ * @param Radius		Radius of the sphere to sweep
+ * @param TraceChannel	
+ * @param bTraceComplex	True to test against complex collision, false to test against simplified collision.
+ * @param OutHit		Properties of the trace hit.
+ * @return				True if there was a hit, false otherwise.
+ */
+bool bHit = UKismetSystemLibrary::SphereTraceSingle(this, sphereStart, sphereEnd, 5.f, traceTypeQuery, false, ignoreActors, EDrawDebugTrace::Type::ForDuration, result, true);
+if (bHit)
+{
+// Do your work
+}
