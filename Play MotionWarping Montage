@@ -1,0 +1,51 @@
+Note: Should apply root motion on animation
+
+// In x.Build.cs
+PublicDependencyModuleNames.AddRange(new string[] {
+    ...
+	, "MotionWarping"
+	, "AnimGraphRuntime"
+});
+
+// In header:
+
+/** MotionWarping */
+UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Animation, meta = (AllowPrivateAccess = "true"))
+UMotionWarpingComponent* MotionWarping;
+
+UFUNCTION(BlueprintCallable)
+void OnMontageCompleted(FName MontageName);
+
+// In C++:
+#include "MotionWarpingComponent.h"
+#include "PlayMontageCallbackProxy.h"
+
+void PlayAnimation(UAnimMontage* Montage)
+{
+  // calculate your own warping position and rotation
+  FVector VaultStart = FVector(0.f, 0.f, 10000.f);
+  FVector VaultMiddle = FVector(0.f, 0.f, 10000.f);
+  FVector VaultEnd = FVector(0.f, 0.f, 10000.f);
+  const FRotator ActorRotator = GetActorRotation();
+
+  FMotionWarpingTarget WarpingStart;
+  WarpingStart.Name = FName(TEXT("WarpingStart"));  // warp target name should be exactly the same as the note on Animation montage
+  WarpingStart.Location = VaultStart;
+  WarpingStart.Rotation = ActorRotator;
+  MotionWarping->AddOrUpdateWarpTarget(WarpingStart);
+  
+  FMotionWarpingTarget WarpingMiddle;
+  WarpingMiddle.Name = FName(TEXT("WarpingMiddle"));  // warp target name should be exactly the same as the note on Animation montage
+  WarpingMiddle.Location = VaultMiddle;
+  WarpingMiddle.Rotation = ActorRotator;
+  MotionWarping->AddOrUpdateWarpTarget(WarpingMiddle);
+  
+  FMotionWarpingTarget WarpingEnd;
+  WarpingEnd.Name = FName(TEXT("WarpingEnd"));  // warp target name should be exactly the same as the note on Animation montage
+  WarpingEnd.Location = VaultEnd;
+  WarpingEnd.Rotation = ActorRotator;
+  MotionWarping->AddOrUpdateWarpTarget(WarpingEnd);
+
+  UPlayMontageCallbackProxy* MontageProxy = UPlayMontageCallbackProxy::CreateProxyObjectForPlayMontage(GetMesh(), Montage);
+  MontageProxy->OnCompleted.AddDynamic(this, &OnMontageCompleted);
+}
